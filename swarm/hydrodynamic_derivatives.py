@@ -52,3 +52,21 @@ def laplacian_scalar(field, x_centers, y_centers, z_centers):
     _, d2fdy2, _ = gradient_scalar(dfdy, x_centers, y_centers, z_centers)
     _, _, d2fdz2 = gradient_scalar(dfdz, x_centers, y_centers, z_centers)
     return d2fdx2 + d2fdy2 + d2fdz2
+
+def gradient_energy(a_field, dx):
+    """
+    Compute gradient energy E = <|∇a|^2>
+    a_field: ndarray (Nx, Ny, Nz, 3)
+    dx: grid spacing
+    """
+    # Compute spatial gradients along x,y,z
+    grad = np.gradient(a_field, dx, axis=(0,1,2))  # returns list of 3 arrays
+    
+    # grad[i] has shape (Nx,Ny,Nz,3)
+    # Compute |∂_i a|^2 for each direction i
+    grad_sq = [(g**2).sum(axis=-1) for g in grad]  # sum over vector components
+    
+    # Total |∇a|^2 = |∂x a|^2 + |∂y a|^2 + |∂z a|^2
+    grad_energy = sum(grad_sq)
+    
+    return grad_energy.mean() 
