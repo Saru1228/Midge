@@ -30,15 +30,40 @@ def add_speed_accel(df):
     df2["accel"] = np.sqrt(df2["ax"]**2 + df2["ay"]**2 + df2["az"]**2)
     return df2
 
-def add_jerk(df):
+def add_jerk(df, dt=0.01):
     """
-    jerk = 加速度对时间的导数。
+    Compute physical jerk = d(a)/dt using centered difference:
+        j(t_i) = (a(t_{i+1}) - a(t_{i-1})) / (2*dt)
+
+    Parameters
+    ----------
+    df : DataFrame
+        Must contain columns ['id','t','ax','ay','az'].
+    dt : float
+        Time step, default 0.01 seconds.
+
+    Returns
+    -------
+    df2 : DataFrame
+        Adds columns jx_clean, jy_clean, jz_clean, jerk_clean.
     """
     df2 = df.copy()
+
     for c in ["ax", "ay", "az"]:
-        df2[f"j{c[1]}"] = df2.groupby("id")[c].diff()
-    df2["jerk"] = np.sqrt(df2["jx"]**2 + df2["jy"]**2 + df2["jz"]**2)
+        df2[f"j{c[1]}"] = (
+            df2.groupby("id")[c].shift(-1) - df2.groupby("id")[c].shift(+1)
+        ) / (2 * dt)
+
+    # Compute magnitude
+    df2["jerk"] = np.sqrt(
+        df2["jx"]**2 +
+        df2["jy"]**2 +
+        df2["jz"]**2
+    )
+
     return df2
+
+
 
 def preprocess_full(df):
     """
