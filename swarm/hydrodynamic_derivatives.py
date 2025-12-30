@@ -99,6 +99,13 @@ def compute_velocity_correlation(vx, vy, vz, x_centers, y_centers, z_centers, ma
     N = len(v_flat)
     print(f"Using {N} non-NaN voxels for C_v(r)")
 
+    if N < 2:
+        raise ValueError(
+            "Not enough valid voxels to compute velocity correlation "
+            "(all-NaN or only one voxel). Consider using a coarser grid, "
+            "increasing padding, or Gaussian coarse-graining."
+        )
+
     # pairwise distances
     # for large grids, subsample
     if N > 5000:
